@@ -230,6 +230,24 @@ class ActionCommand(BaseCommandMixin, click.Command):
             q2cli.util.citations_option(self._get_citation_records)
         ]
 
+        # If this aciton is a pipeline it needs the --recycle and --no-recycle
+        # options.
+        action_obj = self._get_action()
+        if action_obj.type == 'pipeline':
+            self._misc.extend([
+                click.Option(['--recycle'], required=False,
+                             type=str,
+                             help='Allows you to specify a pool to use for '
+                                  'pipeline resumption. If you run a pipeline '
+                                  'without this parameter or the --no-recycle '
+                                  'flag, QIIME will default to the pool '
+                                  'recycle.<plugin>.<action>+<hash of '
+                                  '"plugin:action">'),
+                click.Option(['--no-recycle'], is_flag=True, required=False,
+                             help='Specifies that you do not want to attempt '
+                                  'to recycle results from a previous failed '
+                                  'pipeline run.')])
+
         options = [*self._inputs, *self._params, *self._outputs, *self._misc]
         help_ = [action['description']]
         if self.action['deprecated']:
@@ -300,6 +318,13 @@ class ActionCommand(BaseCommandMixin, click.Command):
                 raise ValueError(f"The given output dir '{output_dir}' "
                                  "appears to be a cache:key combo. Cache keys "
                                  "cannot be used as output dirs.")
+
+        recycle = kwargs.pop('recycle', None)
+        no_recycle = kwargs.pop('no_recycle', None)
+
+        if recycle is not None and no_recycle:
+            raise ValueError('Cannot set a pool to be used for recycling and '
+                             'no recycly simultaneously.')
 
         verbose = kwargs.pop('verbose')
         if verbose is None:
