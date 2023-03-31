@@ -241,7 +241,7 @@ class ActionCommand(BaseCommandMixin, click.Command):
                                   'pipeline resumption. If you run a pipeline '
                                   'without this parameter or the --no-recycle '
                                   'flag, QIIME will default to the pool '
-                                  'recycle.<plugin>.<action>+<hash of '
+                                  'recycle_<plugin>_<action>_<sha1 of '
                                   '"plugin:action">'),
                 click.Option(['--no-recycle'], is_flag=True, required=False,
                              help='Specifies that you do not want to attempt '
@@ -303,6 +303,8 @@ class ActionCommand(BaseCommandMixin, click.Command):
     def __call__(self, **kwargs):
         """Called when user hits return, **kwargs are Dict[click_names, Obj]"""
         import os
+        from hashlib import sha1
+
         import qiime2.util
         from q2cli.util import output_in_cache, _get_cache_path_and_key
         from qiime2.core.cache import Cache
@@ -320,11 +322,11 @@ class ActionCommand(BaseCommandMixin, click.Command):
                                  "cannot be used as output dirs.")
 
         recycle = kwargs.pop('recycle', None)
-        no_recycle = kwargs.pop('no_recycle', None)
+        no_recycle = kwargs.pop('no_recycle', False)
 
         if recycle is not None and no_recycle:
             raise ValueError('Cannot set a pool to be used for recycling and '
-                             'no recycly simultaneously.')
+                             'no recycle simultaneously.')
 
         verbose = kwargs.pop('verbose')
         if verbose is None:
@@ -352,6 +354,26 @@ class ActionCommand(BaseCommandMixin, click.Command):
 
         outputs = self._order_outputs(init_outputs)
         action = self._get_action()
+
+        # If --no-recycle is not set, pipelines attempt to recycle their
+        # outputs from a pool by default allowing recovery of failed pipelines
+        # from point of failure without needing to restart the pipeline from
+        # the beginning
+        recycle_pool = None
+        if not no_recycle and action.type == 'pipeline':
+            # We implicitly use a pool named
+            # recycle_<plugin>_<action>_sha1(plugin:action) if no pool is
+            # provided
+            if recycle is None:
+                plugin_action = f'{action.plugin_id}:{action.id}'
+                recycle_pool = \
+                    f'recycle_{action.plugin_id}_{action.id}_' \
+                    f'{sha1(plugin_action.encode("utf-8")).hexdigest()}'
+            # Otherwise we use the pool they said to use with the --recycle
+            # argument
+            else:
+                recycle_pool = recycle
+
         # `qiime2.util.redirected_stdio` defaults to stdout/stderr when
         # supplied `None`.
         log = None
@@ -374,7 +396,16 @@ class ActionCommand(BaseCommandMixin, click.Command):
         cleanup_logfile = False
         try:
             with qiime2.util.redirected_stdio(stdout=log, stderr=log):
-                results = action(**arguments)
+                if recycle_pool is None:
+                    results = action(**arguments)
+                else:
+                    # TODO: cache should potentially come from a --use-cache
+                    # arg otherwise we're stuck with only the default cache
+                    # here
+                    cache = Cache()
+                    pool = cache.create_pool(key=recycle_pool, reuse=True)
+                    with pool:
+                        results = action(**arguments)
         except Exception as e:
             header = ('Plugin error from %s:'
                       % q2cli.util.to_cli_name(self.plugin['name']))
