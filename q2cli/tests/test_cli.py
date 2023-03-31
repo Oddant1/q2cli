@@ -877,8 +877,20 @@ class TestCollectionSupport(unittest.TestCase):
         with open(os.path.join(self.output, '.order')) as fh:
             self.assertEqual(fh.read(), '0\n1\n')
 
-    def test_mixed_keyed_unkeyed(self):
-        # Puts the keyed param first
+    def test_mixed_keyed_unkeyed_inputs(self):
+        self.art1.save(self.art1_path)
+        self.art2.save(self.art2_path)
+
+        result = self._run_command(
+            'dict-of-ints', '--i-ints', f'foo:{self.art1_path}', '--i-ints',
+            self.art2_path,'--o-output', self.output, '--verbose'
+        )
+
+        self.assertEqual(result.exit_code, 1)
+        self.assertIn('Keyed values cannot be mixed with unkeyed values.',
+                      str(result.exception))
+
+    def test_mixed_keyed_unkeyed_params(self):
         result = self._run_command(
             'dict-params', '--p-ints', 'foo:0', '--p-ints', '1',
             '--o-output', self.output, '--verbose'
@@ -889,7 +901,6 @@ class TestCollectionSupport(unittest.TestCase):
                       ' All values must be keyed or unkeyed',
                       str(result.exception))
 
-        # Puts the unkeyed param first
         result = self._run_command(
             'dict-params', '--p-ints', '0', '--p-ints', 'bar:1',
             '--o-output', self.output, '--verbose'
