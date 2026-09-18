@@ -389,6 +389,15 @@ def _load_input(fp, view=False):
         # If we ended up with an artifact, we disregard our error
         if artifact is not None:
             error = None
+        elif ':' in new_fp:
+            cache_path, cache_key = _get_cache_path_and_key(new_fp)
+            msg = str(error)
+            cache_path
+            msg += \
+                f"\n4. Treating '{key}' as a collection key '{cache_path}'" + \
+                f" as a cache path and '{cache_key}' as an Artifact key in" + \
+                " the cache."
+            error = ValueError(msg)
     # We are just loading a normal artifact on disk without silly colons in the
     # filepath
     else:
@@ -513,8 +522,19 @@ def try_as_cache_input(fp):
 
     # We don't want to invent a new cache on disk here because if their input
     # exists their cache must also already exist
+    #
+    # This isn't ideal. Currently, this is the final branch we check when
+    # trying to load an Artifact with a : in it, and we actually have the
     if not os.path.exists(cache_path) or not Cache.is_cache(cache_path):
-        raise ValueError(f"The path {cache_path!r} is not a valid cache.")
+        raise ValueError(
+            f"Cannot load '{cache_path}:{key}' as an Artifact."
+            " The following approaches were attempted:"
+            f"\n1. Treating '{cache_path}:{key}' as a path to an Artifact."
+            f"\n2. Treating '{cache_path}' as a collection key and '{key}'"
+            " as a path to an Artifact."
+            f"\n3. Treating '{cache_path}' as a path to a cache and '{key}' as"
+            " an Artifact key in the cache."
+        )
 
     cache = Cache(cache_path)
     return cache.load(key)
