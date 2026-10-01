@@ -432,11 +432,10 @@ def _load_input(fp, view=False):
         elif ':' in new_fp:
             cache_path, cache_key = _get_cache_path_and_key(new_fp)
             msg = str(error)
-            cache_path
             msg += \
-                f"\n4. Treating '{key}' as a collection key '{cache_path}'" + \
-                f" as a cache path and '{cache_key}' as an Artifact key in" + \
-                " the cache."
+                f"\n4. Treating '{key}' as a collection key," + \
+                f" '{cache_path}' as a cache path, and '{cache_key}' as an" + \
+                " Artifact key in the cache."
             error = ValueError(msg)
     # We are just loading a normal artifact on disk without silly colons in the
     # filepath
