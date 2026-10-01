@@ -562,9 +562,6 @@ def try_as_cache_input(fp):
 
     # We don't want to invent a new cache on disk here because if their input
     # exists their cache must also already exist
-    #
-    # This isn't ideal. Currently, this is the final branch we check when
-    # trying to load an Artifact with a : in it, and we actually have the
     if not os.path.exists(cache_path) or not Cache.is_cache(cache_path):
         raise ValueError(
             f"Cannot load '{cache_path}:{key}' as an Artifact."
