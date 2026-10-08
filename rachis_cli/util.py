@@ -404,7 +404,7 @@ def _load_input(fp, view=False):
     # called this from rachis tools view.
     import os
 
-    collection_key = None
+    key = None
 
     if not view:
         _ = get_plugin_manager()
@@ -474,7 +474,7 @@ def _load_input(fp, view=False):
             if artifact is not None:
                 # Record the collection key if we found one to be returned to
                 # the caller. If this is None, the caller can handle that
-                collection_key = attempt.collection_key
+                key = attempt.collection_key
                 break
 
             # If we found a cache but couldn't load from it, we assume they
@@ -511,7 +511,7 @@ def _load_input(fp, view=False):
                                f'setting $TMPDIR to a directory with more '
                                f'space, or increasing the size of {path!r})')
 
-    return (collection_key, artifact), error
+    return (key, artifact), error
 
 
 # NOTE: These load collection functions are now virtually identical to class
