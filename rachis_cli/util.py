@@ -429,7 +429,7 @@ def _load_input(fp, view=False):
             f"Treating '{fp}' as a path to an Artifact."
         )]
 
-        # Then we check if it might be a collection_key:path. The just requires
+        # Then we check if it might be a collection_key:path. This requires
         # one colon that isn't at the start or end of the string. The path may
         # contain colons, but the collection key cannot.
         collection_key, path = _get_path_and_collection_key(fp)
