@@ -866,8 +866,8 @@ class TestCacheCli(unittest.TestCase):
             dict_return)
 
         expected = [{
-            'type': 'parsl', 'parsl_type': 'ThreadPoolExecutor'}, {
-            'type': 'parsl', 'parsl_type': 'ThreadPoolExecutor'
+            'type': 'parsl', 'parsl_type': 'HighThroughputExecutor'}, {
+            'type': 'parsl', 'parsl_type': 'HighThroughputExecutor'
         }]
 
         self.assertEqual(list_execution_contexts, expected)
@@ -900,12 +900,12 @@ class TestCacheCli(unittest.TestCase):
             dict_return)
 
         list_expected = [{
-            'type': 'parsl', 'parsl_type': '_TEST_EXECUTOR_'}, {
-            'type': 'parsl', 'parsl_type': '_TEST_EXECUTOR_'
-        }]
-        dict_expected = [{
             'type': 'parsl', 'parsl_type': 'ThreadPoolExecutor'}, {
             'type': 'parsl', 'parsl_type': 'ThreadPoolExecutor'
+        }]
+        dict_expected = [{
+            'type': 'parsl', 'parsl_type': 'HighThroughputExecutor'}, {
+            'type': 'parsl', 'parsl_type': 'HighThroughputExecutor'
         }]
 
         self.assertEqual(list_execution_contexts, list_expected)
@@ -940,12 +940,12 @@ class TestCacheCli(unittest.TestCase):
 
         # The explicit config should override the default
         list_expected = [{
-            'type': 'parsl', 'parsl_type': '_TEST_EXECUTOR_'}, {
-            'type': 'parsl', 'parsl_type': '_TEST_EXECUTOR_'
-        }]
-        dict_expected = [{
             'type': 'parsl', 'parsl_type': 'ThreadPoolExecutor'}, {
             'type': 'parsl', 'parsl_type': 'ThreadPoolExecutor'
+        }]
+        dict_expected = [{
+            'type': 'parsl', 'parsl_type': 'HighThroughputExecutor'}, {
+            'type': 'parsl', 'parsl_type': 'HighThroughputExecutor'
         }]
 
         self.assertEqual(list_execution_contexts, list_expected)
