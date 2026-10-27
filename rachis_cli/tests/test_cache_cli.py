@@ -899,17 +899,17 @@ class TestCacheCli(unittest.TestCase):
         dict_execution_contexts = self._load_alias_execution_contexts(
             dict_return)
 
-        list_expected = [{
+        tpool_expected = [{
             'type': 'parsl', 'parsl_type': 'ThreadPoolExecutor'}, {
             'type': 'parsl', 'parsl_type': 'ThreadPoolExecutor'
         }]
-        dict_expected = [{
+        default_expected = [{
             'type': 'parsl', 'parsl_type': 'HighThroughputExecutor'}, {
             'type': 'parsl', 'parsl_type': 'HighThroughputExecutor'
         }]
 
-        self.assertEqual(list_execution_contexts, list_expected)
-        self.assertEqual(dict_execution_contexts, dict_expected)
+        self.assertEqual(list_execution_contexts, tpool_expected)
+        self.assertEqual(dict_execution_contexts, default_expected)
 
     def test_both_parallel_flags(self):
         output = os.path.join(self.tempdir, 'output')
